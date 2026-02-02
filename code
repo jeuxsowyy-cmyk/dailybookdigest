@@ -1,0 +1,858 @@
+<!-- Daily-Book-Digest.html (version adaptée) -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Daily Book Digest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f7f7f9;
+      --fg: #111827;
+      --muted: #6b7280;
+      --accent: #111827;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+      --radius: 10px;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-main);
+      background: radial-gradient(circle at top, #e5e7eb 0, #f9fafb 45%, #ffffff 100%);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1.25rem 1.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(to bottom, rgba(249, 250, 251, 0.88), rgba(249, 250, 251, 0.94));
+      border-bottom: 1px solid rgba(229, 231, 235, 0.7);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .date-info {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .date-info strong {
+      font-size: 0.95rem;
+      color: var(--fg);
+    }
+
+    main {
+      flex: 1;
+      padding: 1rem 1.5rem 2.5rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-group {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      font-family: inherit;
+      font-size: 0.8rem;
+      padding: 0.4rem 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      cursor: pointer;
+      color: var(--fg);
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: var(--fg);
+      color: #f9fafb;
+      border-color: #111827;
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    button span.key-hint {
+      font-size: 0.7rem;
+      padding: 0.05rem 0.35rem;
+      border-radius: 999px;
+      border: 1px solid rgba(156, 163, 175, 0.9);
+      color: #6b7280;
+      background: rgba(243, 244, 246, 0.9);
+    }
+
+    .day-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 1.3rem 1.2rem 1.35rem;
+      box-shadow:
+        0 22px 45px rgba(15, 23, 42, 0.04),
+        0 1px 0 rgba(148, 163, 184, 0.3);
+      border: 1px solid rgba(229, 231, 235, 0.9);
+    }
+
+    .book-meta {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.25rem 0.75rem;
+      align-items: baseline;
+      margin-bottom: 1rem;
+    }
+
+    .book-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .book-author {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .book-tag-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      color: #4b5563;
+      background: rgba(249, 250, 251, 0.9);
+    }
+
+    .pill.theme {
+      border-color: rgba(37, 99, 235, 0.28);
+      color: #1f2937;
+      background: rgba(239, 246, 255, 0.9);
+    }
+
+    .pill.lang {
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(236, 253, 245, 0.9);
+    }
+
+    .pill.classic {
+      border-color: rgba(249, 115, 22, 0.35);
+      background: rgba(255, 247, 237, 0.9);
+    }
+
+    .section {
+      margin-bottom: 1rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed rgba(209, 213, 219, 0.7);
+    }
+
+    .section:first-of-type {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b7280;
+      margin-bottom: 0.25rem;
+    }
+
+    .section-subtitle {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-bottom: 0.5rem;
+    }
+
+    .section p {
+      margin: 0.25rem 0;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #111827;
+    }
+
+    .idea-block {
+      margin-bottom: 0.6rem;
+    }
+
+    .idea-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.15rem;
+    }
+
+    .idea-body {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: #111827;
+    }
+
+    .badge-counter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.1rem;
+      height: 1.1rem;
+      font-size: 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+      margin-right: 0.3rem;
+      color: #4b5563;
+    }
+
+    blockquote {
+      margin: 0.5rem 0;
+      padding: 0.6rem 0.75rem;
+      border-left: 3px solid rgba(148, 163, 184, 0.7);
+      border-radius: 6px;
+      background: rgba(249, 250, 251, 0.9);
+      font-size: 0.88rem;
+      color: #374151;
+    }
+
+    blockquote footer {
+      margin-top: 0.2rem;
+      font-size: 0.76rem;
+      color: #9ca3af;
+    }
+
+    ul {
+      padding-left: 1.05rem;
+      margin: 0.15rem 0 0.2rem;
+    }
+
+    ul li {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: #111827;
+      margin: 0.1rem 0;
+    }
+
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.35rem 1.1rem;
+      margin-top: 0.25rem;
+    }
+
+    .glossary-term {
+      font-size: 0.86rem;
+    }
+
+    .glossary-term strong {
+      font-weight: 600;
+    }
+
+    .helper-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    footer {
+      padding: 0.75rem 1.5rem 1.25rem;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      border-top: 1px solid rgba(229, 231, 235, 0.7);
+      text-align: center;
+    }
+
+    footer span {
+      opacity: 0.9;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 1rem 1rem 0.6rem;
+      }
+
+      main {
+        padding: 0.9rem 1rem 2.2rem;
+      }
+
+      footer {
+        padding: 0.6rem 1rem 1.1rem;
+      }
+
+      .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .nav-group {
+        justify-content: space-between;
+      }
+
+      .book-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .book-tag-row {
+        justify-content: flex-start;
+      }
+    }
+
+    /* Impression → PDF (Chrome Android / Desktop) */
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      header,
+      footer,
+      .toolbar {
+        display: none !important;
+      }
+
+      main {
+        max-width: none;
+        margin: 0;
+        padding: 0.5cm 1.1cm 0.8cm;
+      }
+
+      .summary-card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+      }
+
+      .section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .idea-block {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      @page {
+        size: A4;
+        margin: 1.25cm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Daily Book Digest</h1>
+          <p>Un livre important par jour, en 15–20 minutes de lecture.</p>
+        </div>
+        <div class="date-info">
+          <span>Jour</span>
+          <strong id="day-index-label">1</strong>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <div class="nav-group">
+          <button id="prev-day-btn">
+            ← Jour précédent
+            <span class="key-hint">←</span>
+          </button>
+          <button id="next-day-btn">
+            Jour suivant →
+            <span class="key-hint">→</span>
+          </button>
+          <span class="day-label" id="date-label"></span>
+        </div>
+        <div class="nav-group">
+          <button class="primary" id="print-btn">
+            Imprimer / Enregistrer en PDF
+          </button>
+        </div>
+      </div>
+
+      <article class="summary-card" id="summary-root">
+        <!-- Contenu du résumé injecté en JS -->
+      </article>
+      <p class="helper-text">
+        Astuce Android (Chrome) : menu ⋮ → Imprimer → Enregistrer en PDF.
+      </p>
+    </main>
+
+    <footer>
+      <span>Daily Book Digest · Année 1 à partir du 1er février 2026</span>
+    </footer>
+  </div>
+
+  <script>
+    const START_DATE_STR = "2026-02-01";
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    function parseDate(str) {
+      const [y, m, d] = str.split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function formatDateLong(date, lang) {
+      return date.toLocaleDateString(lang === "EN" ? "en-US" : "fr-FR", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    function dateToISO(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function getDayIndex(targetDate) {
+      const start = parseDate(START_DATE_STR);
+      const diff = Math.round((targetDate - start) / DAY_MS);
+      return diff + 1;
+    }
+
+    function getDateForIndex(index) {
+      const start = parseDate(START_DATE_STR);
+      return new Date(start.getTime() + (index - 1) * DAY_MS);
+    }
+
+    // Placeholder: planning + résumés
+    // Tu pourras ici remplacer par une vraie lecture JSON (schedule + summaries).
+    function getBookMetaForDate(dateStr) {
+      // Exemple minimal : Day 1 = Wealth of Nations / ensuite on répète pour la démo
+      const dayIndex = getDayIndex(parseDate(dateStr));
+      if (dayIndex === 1) {
+        return {
+          title: "The Wealth of Nations",
+          author: "Adam Smith",
+          year: 1776,
+          language: "EN",
+          theme: "Finance / Économie",
+          isClassic: true,
+          importance:
+            "Fondation de l'économie politique moderne, réflexion sur les marchés, la division du travail et le rôle de l'État."
+        };
+      }
+      if (dayIndex === 2) {
+        return {
+          title: "Le Deuxième Sexe",
+          author: "Simone de Beauvoir",
+          year: 1949,
+          language: "FR",
+          theme: "Philosophie / Féminisme",
+          isClassic: true,
+          importance:
+            "Ouvrage majeur du féminisme existentialiste, qui questionne la construction sociale du féminin et la situation des femmes."
+        };
+      }
+      // fallback générique
+      return {
+        title: "Public Domain Classic #" + dayIndex,
+        author: "Auteur inconnu",
+        year: 1920,
+        language: dayIndex % 2 === 0 ? "FR" : "EN",
+        theme: dayIndex % 3 === 0 ? "Philosophie" : "Finance / Économie",
+        isClassic: dayIndex % 4 !== 0,
+        importance:
+          "Livre libre de droits utilisé ici comme placeholder. Remplace ce bloc par ton planning réel (schedule.json)."
+      };
+    }
+
+    function getSummaryForDate(dateStr) {
+      // Ici : gabarit “4–6 idées longues” pour 15–20 minutes de lecture.
+      // À remplacer plus tard par tes vrais contenus détaillés.
+      const meta = getBookMetaForDate(dateStr);
+      const lang = meta.language;
+
+      const isEN = lang === "EN";
+
+      const context = isEN
+        ? [
+            "This digest gives you a dense but readable overview of the book’s core arguments, so that you can grasp most of its stakes in a single sitting.",
+            "It does not replace the book, but it should give you enough structure and nuance to navigate the original text with confidence."
+          ]
+        : [
+            "Ce digest te propose une vue dense mais lisible des thèses centrales du livre, pour saisir l’essentiel de ses enjeux en une seule lecture.",
+            "Il ne remplace pas le livre, mais te donne une ossature et des nuances suffisantes pour revenir au texte original avec plus de clarté."
+          ];
+
+      const ideas = isEN
+        ? [
+            {
+              title: "1. Core thesis and historical context",
+              body:
+                "The author formulates a central thesis about how a specific economic or social mechanism shapes modern societies. This thesis is embedded in a particular historical moment: the emergence of industrial capitalism, the consolidation of nation-states, or the transformation of moral values. Understanding this context matters because many examples and arguments assume institutions and constraints that were obvious for readers at the time. By reconstructing that background, the book suggests that what looks natural or inevitable today is in fact the result of contingent historical developments."
+            },
+            {
+              title: "2. A key mechanism, explained step by step",
+              body:
+                "At the heart of the book lies a simple but powerful mechanism: for instance, how specialization increases productivity, how norms shape behaviour, or how power concentrates in institutions. The author usually starts from a basic intuition, then refines it through examples and counterexamples. This digest unpacks the mechanism in slow motion, highlighting the logical links between assumptions, intermediate steps, and conclusions. The aim is that you can reproduce the reasoning on your own: you should be able to explain not only what the mechanism is, but also why it is supposed to work in the way the author claims."
+            },
+            {
+              title: "3. Distributional and political implications",
+              body:
+                "Mechanisms in economics and social theory rarely affect everyone equally. The book typically points to winners and losers, explicit or implicit. Sometimes the author embraces these inequalities as the price of progress; sometimes they are the very injustice being denounced. This section focuses on who gains, who loses, and what kinds of power relations are reinforced or challenged. The digest also draws attention to the way the author frames these conflicts: are they markets vs. states, classes vs. classes, genders, regions, or something else entirely?"
+            },
+            {
+              title: "4. Main criticisms and limitations",
+              body:
+                "No major book survives without serious criticism. Some objections target its assumptions: are the actors really as rational, selfish, or constrained as the model suggests? Others attack the evidence: are the historical cases cherry-picked, or do they generalize? This section presents a few robust lines of criticism that have been made against the book, not to dismiss it, but to show where its explanatory power stops. Knowing these limits prevents you from applying its concepts too mechanically, and helps you see how later authors either extended or corrected the original framework."
+            },
+            {
+              title: "5. How the book still matters today",
+              body:
+                "Even if the world has changed since the book was written, its categories and intuitions still provide a powerful lens. Many later debates—about inequality, globalization, democracy, gender, or colonial legacies—quietly reuse its vocabulary and implicit assumptions. Reading it through this digest shows you which intuitions remain useful, and where you must consciously update them. The ambition is that, after this reading, the next time you encounter a policy debate, a news article, or a theoretical argument, you can recognise the ghost of this book behind the scenes."
+            }
+          ]
+        : [
+            {
+              title: "1. Thèse centrale et contexte historique",
+              body:
+                "L’auteur formule une thèse centrale sur la façon dont un mécanisme économique, social ou symbolique façonne les sociétés modernes. Cette thèse s’inscrit dans un moment historique précis : émergence du capitalisme industriel, consolidation des États-nations, transformation des normes morales, etc. Comprendre ce contexte est crucial, car une partie des exemples et des arguments suppose des institutions et des évidences qui allaient de soi pour les lecteurs de l’époque. En reconstituant ce décor, le livre montre que ce qui nous paraît naturel aujourd’hui est souvent le produit de trajectoires historiques contingentes."
+            },
+            {
+              title: "2. Un mécanisme clé, déroulé étape par étape",
+              body:
+                "Au cœur du livre, on trouve un mécanisme simple mais puissant : par exemple, comment la division du travail accroît la productivité, comment des normes façonnent les comportements, ou comment le pouvoir se concentre dans certaines institutions. L’auteur part d’une intuition assez intuitive, puis la raffine par des exemples, des cas limites et parfois des contre-exemples. Ce digest déroule ce mécanisme au ralenti, en explicitant les liens logiques entre hypothèses, étapes intermédiaires et conclusions. L’objectif est que tu puisses ensuite reconstituer l’argument toi-même, au-delà des formules."
+            },
+            {
+              title: "3. Enjeux distributifs et politiques",
+              body:
+                "Les mécanismes décrits ne touchent jamais tout le monde de la même manière. Le livre identifie souvent, explicitement ou non, des gagnants et des perdants. Parfois l’auteur assume ces inégalités comme le prix du progrès ; parfois elles sont précisément ce qu’il dénonce. Cette partie se concentre sur qui gagne quoi, qui perd quoi, et quels rapports de force sont consolidés ou contestés. Le digest attire aussi ton attention sur la manière dont ces conflits sont cadrés : marchés contre États, classes sociales, genre, centre/périphérie, ou encore rapports coloniaux."
+            },
+            {
+              title: "4. Principales critiques et zones d’ombre",
+              body:
+                "Aucun livre important n’échappe aux critiques. Certaines attaques visent ses hypothèses : les acteurs sont-ils vraiment aussi rationnels, intéressés ou contraints que le modèle le suppose ? D’autres ciblent la preuve : les exemples historiques sont-ils représentatifs ou triés sur le volet ? Cette section résume quelques lignes critiques robustes, non pour invalider le livre, mais pour montrer jusqu’où son pouvoir explicatif s’étend. Connaître ces limites évite de plaquer ses catégories trop mécaniquement et aide à comprendre comment des auteurs ultérieurs l’ont prolongé ou corrigé."
+            },
+            {
+              title: "5. Pourquoi ce livre compte encore",
+              body:
+                "Même si le monde a changé depuis sa publication, les catégories et intuitions du livre restent une grille de lecture puissante. De nombreux débats contemporains – sur les inégalités, la mondialisation, la démocratie, le genre ou l’héritage colonial – réutilisent silencieusement son vocabulaire ou ses présupposés. Le digest met en lumière ce qui reste fécond dans cette manière de voir, et là où il faut consciemment la mettre à jour. L’idée est qu’après cette lecture, tu puisses reconnaître, derrière un débat public ou un article, la silhouette de ce livre en arrière-plan."
+            }
+          ];
+
+      const quotes = isEN
+        ? [
+            {
+              text:
+                "In every age, the powerful attempt to present their interests as the natural order of things, and the task of critical thought is to show where this ‘nature’ has been constructed.",
+              source: "Excerpt reconstructed in the spirit of the book."
+            }
+          ]
+        : [
+            {
+              text:
+                "À chaque époque, les groupes dominants tentent de présenter leurs intérêts comme l’ordre naturel des choses ; le rôle de la pensée critique est de montrer comment cet ‘ordre’ a été construit.",
+              source: "Extrait reconstitué dans l’esprit du livre."
+            }
+          ];
+
+      const glossary = isEN
+        ? [
+            { term: "Division of labour", def: "Fragmentation of tasks among workers or entities to increase productivity but also dependence." },
+            { term: "Institution", def: "Durable rule or organisation that structures expectations and behaviour over time." },
+            { term: "Incentives", def: "Structures of rewards and sanctions that shape individual decisions." },
+            { term: "Power", def: "Asymmetric capacity to impose decisions or shape the space of possible choices." }
+          ]
+        : [
+            { term: "Division du travail", def: "Fragmentation des tâches entre acteurs pour accroître la productivité, au prix d’une dépendance accrue." },
+            { term: "Institution", def: "Règle ou organisation durable qui structure les comportements et les anticipations." },
+            { term: "Incitations", def: "Ensemble des récompenses et sanctions qui guident les décisions individuelles." },
+            { term: "Pouvoir", def: "Capacité asymétrique à imposer des décisions ou à cadrer les possibles." }
+          ];
+
+      const questions = isEN
+        ? [
+            "Which part of the author’s mechanism do you find most convincing, and why?",
+            "Where do you see this book’s logic at work in today’s world?",
+            "Which assumption would you relax or invert to see what breaks in the argument?",
+            "Is there a group or perspective that the book systematically ignores?",
+            "If you had to summarise the book in one sentence for someone else, what would you keep?"
+          ]
+        : [
+            "Quelle partie du mécanisme proposé par l’auteur te semble la plus convaincante, et pourquoi ?",
+            "Où vois-tu aujourd’hui cette logique à l’œuvre dans le monde réel ?",
+            "Quelle hypothèse changerais-tu ou relâcherais-tu pour tester la solidité de l’argument ?",
+            "Y a-t-il un groupe ou un point de vue que le livre laisse quasiment hors-champ ?",
+            "Si tu devais résumer ce livre en une seule phrase pour quelqu’un d’autre, que garderais-tu absolument ?"
+          ];
+
+      return { meta, context, ideas, quotes, glossary, questions };
+    }
+
+    function renderSummary(dateStr) {
+      const root = document.getElementById("summary-root");
+      const { meta, context, ideas, quotes, glossary, questions } =
+        getSummaryForDate(dateStr);
+
+      const dateObj = parseDate(dateStr);
+      const humanDate = formatDateLong(dateObj, meta.language);
+      document.getElementById("date-label").textContent = humanDate;
+      document.getElementById("day-index-label").textContent =
+        getDayIndex(dateObj);
+
+      document.title = `Daily Book Digest · ${dateStr}`;
+
+      const lang = meta.language;
+      const isEN = lang === "EN";
+
+      root.innerHTML = `
+        <header class="book-meta">
+          <div>
+            <div class="book-title">${meta.title}</div>
+            <div class="book-author">
+              ${meta.author} · ${meta.year}
+            </div>
+          </div>
+          <div class="book-tag-row">
+            <span class="pill theme">${meta.theme}</span>
+            <span class="pill lang">${lang}</span>
+            ${
+              meta.isClassic
+                ? `<span class="pill classic">${
+                    isEN ? "Classic" : "Classique"
+                  }</span>`
+                : ""
+            }
+          </div>
+        </header>
+
+        <section class="section">
+          <div class="section-title">${
+            isEN ? "Context and stakes" : "Contexte et enjeux"
+          }</div>
+          <div class="section-subtitle">${
+            isEN
+              ? "Why this book matters and what this digest aims to give you."
+              : "Pourquoi ce livre compte et ce que ce digest te permet de saisir."
+          }</div>
+          ${context.map((p) => `<p>${p}</p>`).join("")}
+          <p><strong>${
+            isEN ? "Importance" : "Importance"
+          }</strong> — ${meta.importance}</p>
+        </section>
+
+        <section class="section">
+          <div class="section-title">${
+            isEN ? "Core ideas" : "Idées principales"
+          }</div>
+          <div class="section-subtitle">${
+            isEN
+              ? "A few dense ideas rather than many superficial points."
+              : "Quelques idées denses plutôt qu’une liste superficielle."
+          }</div>
+          ${ideas
+            .map(
+              (idea, idx) => `
+              <div class="idea-block">
+                <div class="idea-title">
+                  <span class="badge-counter">${idx + 1}</span>${idea.title}
+                </div>
+                <div class="idea-body">${idea.body}</div>
+              </div>
+            `
+            )
+            .join("")}
+        </section>
+
+        <section class="section">
+          <div class="section-title">${
+            isEN ? "Selected passages" : "Passages choisis"
+          }</div>
+          <div class="section-subtitle">${
+            isEN
+              ? "Short excerpts or reconstructed sentences in the spirit of the book."
+              : "Courts extraits ou phrases reconstituées dans l’esprit du livre."
+          }</div>
+          ${
+            quotes.length === 0
+              ? `<p>${isEN ? "To be completed." : "À compléter."}</p>`
+              : quotes
+                  .map(
+                    (q) => `
+                <blockquote>
+                  <div>${q.text}</div>
+                  <footer>${q.source}</footer>
+                </blockquote>
+              `
+                  )
+                  .join("")
+          }
+        </section>
+
+        <section class="section">
+          <div class="section-title">${
+            isEN ? "Key notions" : "Notions clés"
+          }</div>
+          <div class="section-subtitle">${
+            isEN
+              ? "Concepts you should be able to explain in your own words."
+              : "Concepts que tu devrais pouvoir expliquer avec tes mots."
+          }</div>
+          <div class="glossary-grid">
+            ${glossary
+              .map(
+                (g) => `
+              <div class="glossary-term">
+                <strong>${g.term}</strong> — ${g.def}
+              </div>
+            `
+              )
+              .join("")}
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-title">${
+            isEN ? "Questions" : "Questions"
+          }</div>
+          <div class="section-subtitle">${
+            isEN
+              ? "Use these to check your understanding or as prompts for notes."
+              : "À utiliser comme auto-test ou comme amorces pour tes notes."
+          }</div>
+          <ul>
+            ${questions.map((q) => `<li>${q}</li>`).join("")}
+          </ul>
+        </section>
+      `;
+    }
+
+    function getQueryDate() {
+      const params = new URLSearchParams(window.location.search);
+      const date = params.get("date");
+      if (!date) return null;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+      return date;
+    }
+
+    function setQueryDate(dateStr) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("date", dateStr);
+      window.history.pushState({}, "", url.toString());
+    }
+
+    function initApp() {
+      const prevBtn = document.getElementById("prev-day-btn");
+      const nextBtn = document.getElementById("next-day-btn");
+      const printBtn = document.getElementById("print-btn");
+
+      let currentDate = getQueryDate() || START_DATE_STR;
+
+      function update(dateStr) {
+        currentDate = dateStr;
+        renderSummary(dateStr);
+
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
+        setQueryDate(dateStr);
+      }
+
+      prevBtn.addEventListener("click", () => {
+        const d = parseDate(currentDate);
+        const newDate = new Date(d.getTime() - DAY_MS);
+        update(dateToISO(newDate));
+      });
+
+      nextBtn.addEventListener("click", () => {
+        const d = parseDate(currentDate);
+        const newDate = new Date(d.getTime() + DAY_MS);
+        update(dateToISO(newDate));
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") prevBtn.click();
+        if (e.key === "ArrowRight") nextBtn.click();
+      });
+
+      printBtn.addEventListener("click", () => {
+        window.print();
+      });
+
+      window.addEventListener("popstate", () => {
+        const qDate = getQueryDate() || START_DATE_STR;
+        currentDate = qDate;
+        renderSummary(qDate);
+      });
+
+      update(currentDate);
+    }
+
+    document.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
