@@ -491,45 +491,46 @@
 
     // Placeholder: planning + résumés
     // Tu pourras ici remplacer par une vraie lecture JSON (schedule + summaries).
-    function getBookMetaForDate(dateStr) {
-      // Exemple minimal : Day 1 = Wealth of Nations / ensuite on répète pour la démo
-      const dayIndex = getDayIndex(parseDate(dateStr));
-      if (dayIndex === 1) {
-        return {
-          title: "The Wealth of Nations",
-          author: "Adam Smith",
-          year: 1776,
-          language: "EN",
-          theme: "Finance / Économie",
-          isClassic: true,
-          importance:
-            "Fondation de l'économie politique moderne, réflexion sur les marchés, la division du travail et le rôle de l'État."
-        };
-      }
-      if (dayIndex === 2) {
-        return {
-          title: "Le Deuxième Sexe",
-          author: "Simone de Beauvoir",
-          year: 1949,
-          language: "FR",
-          theme: "Philosophie / Féminisme",
-          isClassic: true,
-          importance:
-            "Ouvrage majeur du féminisme existentialiste, qui questionne la construction sociale du féminin et la situation des femmes."
-        };
-      }
-      // fallback générique
-      return {
-        title: "Public Domain Classic #" + dayIndex,
-        author: "Auteur inconnu",
-        year: 1920,
-        language: dayIndex % 2 === 0 ? "FR" : "EN",
-        theme: dayIndex % 3 === 0 ? "Philosophie" : "Finance / Économie",
-        isClassic: dayIndex % 4 !== 0,
-        importance:
-          "Livre libre de droits utilisé ici comme placeholder. Remplace ce bloc par ton planning réel (schedule.json)."
-      };
+  // Remplace cette fonction dans ton HTML
+async function getBookMetaForDate(dateStr) {
+  try {
+    // Charge le planning depuis data/schedule.json
+    const response = await fetch('data/schedule.json');
+    if (!response.ok) throw new Error('Schedule not found');
+    
+    const schedule = await response.json();
+    const book = schedule[dateStr];
+    
+    if (!book) {
+      console.log(`No book for ${dateStr}, using fallback`);
+      return getBookMetaForDateFallback(dateStr);
     }
+    
+    return {
+      title: book.title,
+      author: book.author,
+      year: book.year,
+      language: book.language,
+      theme: book.theme,
+      isClassic: book.isClassic,
+      importance: `Livre ${book.source} ${book.id ? `#${book.id}` : ''} · ${book.theme}`
+    };
+  } catch (error) {
+    console.error('Error loading schedule:', error);
+    // Fallback vers ton code actuel
+    return getBookMetaForDateFallback(dateStr);
+  }
+}
+
+// Ajoute cette fonction de fallback (si schedule.json pas trouvé)
+function getBookMetaForDateFallback(dateStr) {
+  const dayIndex = getDayIndex(parseDate(dateStr));
+  // Ton code actuel...
+  if (dayIndex === 1) {
+    return { /* ... */ };
+  }
+  // etc.
+}
 
     function getSummaryForDate(dateStr) {
       // Ici : gabarit “4–6 idées longues” pour 15–20 minutes de lecture.
